@@ -47,6 +47,25 @@ export default function App() {
     setTasks([...tasks, task]);
   }
 
+  function handleApplyRecommendation(result) {
+    const removeIds = new Set(result.fixedSelected.map((t) => t.id));
+    const durationUpdates = new Map();
+
+    result.flexibleAllocations.forEach((a) => {
+      if (a.isPartial) {
+        durationUpdates.set(a.task.id, Math.max(0, a.task.duration - a.minutesUsed));
+      } else {
+        removeIds.add(a.task.id);
+      }
+    });
+
+    setTasks(
+      tasks
+        .filter((t) => !removeIds.has(t.id))
+        .map((t) => (durationUpdates.has(t.id) ? { ...t, duration: durationUpdates.get(t.id) } : t))
+    );
+  }
+
   function handleUpdateTask(updated) {
     setTasks(tasks.map((t) => (t.id === updated.id ? updated : t)));
     setEditingTaskId(null);
@@ -183,7 +202,7 @@ export default function App() {
                   <h2 id="recommend-heading" className="font-display text-xl text-ink mb-3">
                     자투리 시간에 뭐 할까?
                   </h2>
-                  <RecommendPanel events={events} tasks={tasks} />
+                  <RecommendPanel events={events} tasks={tasks} onApply={handleApplyRecommendation} />
                 </section>
 
                 <div className="grid gap-10 md:grid-cols-2 md:gap-8">

@@ -3,12 +3,13 @@ import { minutesUntilNextEvent } from "../lib/dateUtils";
 import { recommend } from "../lib/knapsack";
 import { TimeBar } from "./TimeBar";
 
-export function RecommendPanel({ events, tasks }) {
+export function RecommendPanel({ events, tasks, onApply }) {
   const nextEventInfo = useMemo(() => minutesUntilNextEvent(events), [events]);
   const [capacityInput, setCapacityInput] = useState(
     nextEventInfo ? String(nextEventInfo.minutes) : ""
   );
   const [submittedCapacity, setSubmittedCapacity] = useState(null);
+  const [appliedMessage, setAppliedMessage] = useState("");
 
   const pendingTasks = useMemo(() => tasks.filter((t) => !t.completed), [tasks]);
 
@@ -25,6 +26,28 @@ export function RecommendPanel({ events, tasks }) {
     e.preventDefault();
     const minutes = Number(capacityInput);
     if (minutes > 0) setSubmittedCapacity(minutes);
+    setAppliedMessage("");
+  }
+
+  function handleApply() {
+    if (!result) return;
+
+    const fullyDone =
+      result.fixedSelected.length + result.flexibleAllocations.filter((a) => !a.isPartial).length;
+    const partialOnes = result.flexibleAllocations.filter((a) => a.isPartial);
+
+    onApply(result);
+
+    const parts = [];
+    if (fullyDone > 0) parts.push(`${fullyDone}개는 완료 처리했어요`);
+    if (partialOnes.length > 0) {
+      const detail = partialOnes
+        .map((a) => `"${a.task.title}" 남은 시간 ${a.task.duration - a.minutesUsed}분`)
+        .join(", ");
+      parts.push(`${partialOnes.length}개는 한 만큼 줄였어요 (${detail})`);
+    }
+    setAppliedMessage(parts.length > 0 ? parts.join(" · ") : "적용했어요.");
+    setSubmittedCapacity(null);
   }
 
   return (
@@ -75,9 +98,25 @@ export function RecommendPanel({ events, tasks }) {
         </p>
       )}
 
+      {appliedMessage && (
+        <p className="mt-3 text-sm text-moss-dark">{appliedMessage}</p>
+      )}
+
       {result && (
         <div className="mt-6">
           <TimeBar capacity={submittedCapacity} result={result} />
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={handleApply}
+              className="rounded-md bg-ink text-paper px-4 py-2 text-sm font-medium hover:bg-moss-dark transition-colors"
+            >
+              이대로 완료 처리
+            </button>
+            <span className="text-xs text-ink-soft">
+              끝까지 한 일은 목록에서 지우고, 끊어서 한 일은 한 만큼만 시간을 줄여요.
+            </span>
+          </div>
         </div>
       )}
     </div>
