@@ -1,6 +1,6 @@
 import { formatDateLabel, isEventPast, categoryColor } from "../lib/dateUtils";
 
-export function EventList({ events, onRemove }) {
+export function EventList({ events, onRemove, onEdit, editingEventId }) {
   if (events.length === 0) {
     return (
       <p className="text-sm text-ink-soft py-6 text-center border border-dashed border-line rounded-md">
@@ -23,6 +23,7 @@ export function EventList({ events, onRemove }) {
         const showHeader = dateLabel !== lastDateLabel;
         lastDateLabel = dateLabel;
         const past = isEventPast(ev);
+        const isEditing = ev.id === editingEventId;
 
         return (
           <li key={ev.id}>
@@ -32,9 +33,9 @@ export function EventList({ events, onRemove }) {
               </p>
             )}
             <div
-              className={`flex items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 ${
-                past ? "opacity-45" : ""
-              }`}
+              className={`flex items-center gap-3 rounded-md border px-4 py-3 ${
+                isEditing ? "border-moss ring-1 ring-moss bg-surface" : "border-line bg-surface"
+              } ${past ? "opacity-45" : ""}`}
             >
               <span
                 className="h-2 w-2 rounded-full shrink-0"
@@ -48,6 +49,13 @@ export function EventList({ events, onRemove }) {
                 <p className="text-ink truncate">{ev.title}</p>
                 {ev.category && <p className="text-xs text-ink-soft">{ev.category}</p>}
               </div>
+              <button
+                onClick={() => onEdit(ev.id)}
+                className="text-sm text-ink-soft hover:text-moss-dark transition-colors shrink-0"
+                aria-label={`${ev.title} 수정`}
+              >
+                수정
+              </button>
               <button
                 onClick={() => onRemove(ev.id)}
                 className="text-sm text-ink-soft hover:text-clay transition-colors shrink-0"

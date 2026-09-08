@@ -13,6 +13,8 @@ export default function App() {
   const [rawTasks, setTasks] = useLocalStorage("teumsae:tasks", []);
   const [addType, setAddType] = useState("task"); // "event" | "task"
   const [viewMode, setViewMode] = useState("list"); // "list" | "calendar"
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(null);
 
   // 예전 데이터 형식(마감일/카테고리/완료 필드 없음)과 호환되도록 기본값을 채워준다.
   const tasks = rawTasks.map((t) => ({
@@ -24,24 +26,57 @@ export default function App() {
     ...t,
   }));
 
+  const editingEvent = events.find((e) => e.id === editingEventId) || null;
+  const editingTask = tasks.find((t) => t.id === editingTaskId) || null;
+
   function handleAddEvent(event) {
     setEvents([...events, event]);
   }
 
+  function handleUpdateEvent(updated) {
+    setEvents(events.map((e) => (e.id === updated.id ? updated : e)));
+    setEditingEventId(null);
+  }
+
   function handleRemoveEvent(id) {
     setEvents(events.filter((e) => e.id !== id));
+    if (editingEventId === id) setEditingEventId(null);
   }
 
   function handleAddTask(task) {
     setTasks([...tasks, task]);
   }
 
+  function handleUpdateTask(updated) {
+    setTasks(tasks.map((t) => (t.id === updated.id ? updated : t)));
+    setEditingTaskId(null);
+  }
+
   function handleRemoveTask(id) {
     setTasks(tasks.filter((t) => t.id !== id));
+    if (editingTaskId === id) setEditingTaskId(null);
   }
 
   function handleToggleComplete(id) {
     setTasks(tasks.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+  }
+
+  function handleStartEditEvent(id) {
+    setEditingTaskId(null);
+    setEditingEventId(id);
+    setAddType("event");
+  }
+
+  function handleStartEditTask(id) {
+    setEditingEventId(null);
+    setEditingTaskId(id);
+    setAddType("task");
+  }
+
+  function selectAddType(type) {
+    setAddType(type);
+    setEditingEventId(null);
+    setEditingTaskId(null);
   }
 
   return (
@@ -57,12 +92,12 @@ export default function App() {
         <div className="grid gap-10 lg:grid-cols-[360px_1fr] lg:items-start lg:gap-8 xl:grid-cols-[340px_1fr_300px]">
           <section aria-labelledby="add-heading" className="lg:sticky lg:top-10">
             <h2 id="add-heading" className="font-display text-xl text-ink mb-3">
-              추가하기
+              {editingEvent || editingTask ? "수정하기" : "추가하기"}
             </h2>
             <div className="mb-4 inline-flex rounded-md border border-line overflow-hidden">
               <button
                 type="button"
-                onClick={() => setAddType("event")}
+                onClick={() => selectAddType("event")}
                 className={`px-4 py-1.5 text-sm transition-colors ${
                   addType === "event"
                     ? "bg-ink text-paper"
@@ -73,7 +108,7 @@ export default function App() {
               </button>
               <button
                 type="button"
-                onClick={() => setAddType("task")}
+                onClick={() => selectAddType("task")}
                 className={`px-4 py-1.5 text-sm transition-colors border-l border-line ${
                   addType === "task"
                     ? "bg-ink text-paper"
@@ -85,9 +120,19 @@ export default function App() {
             </div>
 
             {addType === "event" ? (
-              <EventForm onAdd={handleAddEvent} />
+              <EventForm
+                onAdd={handleAddEvent}
+                onUpdate={handleUpdateEvent}
+                editingEvent={editingEvent}
+                onCancelEdit={() => setEditingEventId(null)}
+              />
             ) : (
-              <TaskForm onAdd={handleAddTask} />
+              <TaskForm
+                onAdd={handleAddTask}
+                onUpdate={handleUpdateTask}
+                editingTask={editingTask}
+                onCancelEdit={() => setEditingTaskId(null)}
+              />
             )}
           </section>
 
@@ -128,6 +173,8 @@ export default function App() {
                   onRemoveEvent={handleRemoveEvent}
                   onRemoveTask={handleRemoveTask}
                   onToggleComplete={handleToggleComplete}
+                  onEditEvent={handleStartEditEvent}
+                  onEditTask={handleStartEditTask}
                 />
               </section>
             ) : (
@@ -144,7 +191,12 @@ export default function App() {
                     <h2 id="events-heading" className="font-display text-xl text-ink mb-3">
                       일정 ({events.length})
                     </h2>
-                    <EventList events={events} onRemove={handleRemoveEvent} />
+                    <EventList
+                      events={events}
+                      onRemove={handleRemoveEvent}
+                      onEdit={handleStartEditEvent}
+                      editingEventId={editingEventId}
+                    />
                   </section>
 
                   <section aria-labelledby="tasks-heading">
@@ -155,6 +207,8 @@ export default function App() {
                       tasks={tasks}
                       onRemove={handleRemoveTask}
                       onToggleComplete={handleToggleComplete}
+                      onEdit={handleStartEditTask}
+                      editingTaskId={editingTaskId}
                     />
                   </section>
                 </div>

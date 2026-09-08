@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const emptyDraft = {
   title: "",
@@ -10,9 +10,26 @@ const emptyDraft = {
   category: "",
 };
 
-export function TaskForm({ onAdd }) {
+export function TaskForm({ onAdd, onUpdate, editingTask, onCancelEdit }) {
   const [draft, setDraft] = useState(emptyDraft);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (editingTask) {
+      setDraft({
+        title: editingTask.title,
+        duration: String(editingTask.duration),
+        value: editingTask.value,
+        splittable: editingTask.splittable,
+        deadline: editingTask.deadline || "",
+        deadlineTime: editingTask.deadlineTime || "",
+        category: editingTask.category || "",
+      });
+      setError("");
+    } else {
+      setDraft(emptyDraft);
+    }
+  }, [editingTask]);
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -28,8 +45,7 @@ export function TaskForm({ onAdd }) {
       return;
     }
 
-    onAdd({
-      id: crypto.randomUUID(),
+    const common = {
       title,
       duration: Math.round(duration),
       value: Number(draft.value),
@@ -37,10 +53,19 @@ export function TaskForm({ onAdd }) {
       deadline: draft.deadline || null,
       deadlineTime: draft.deadline ? draft.deadlineTime || null : null,
       category: draft.category.trim(),
-      completed: false,
-      createdAt: Date.now(),
-    });
-    setDraft(emptyDraft);
+    };
+
+    if (editingTask) {
+      onUpdate({ ...editingTask, ...common });
+    } else {
+      onAdd({
+        id: crypto.randomUUID(),
+        ...common,
+        completed: false,
+        createdAt: Date.now(),
+      });
+      setDraft(emptyDraft);
+    }
     setError("");
   }
 
@@ -171,12 +196,23 @@ export function TaskForm({ onAdd }) {
 
       {error && <p className="text-sm text-clay">{error}</p>}
 
-      <button
-        type="submit"
-        className="w-full rounded-md bg-ink text-paper py-2.5 font-medium hover:bg-moss-dark transition-colors"
-      >
-        할 일 추가하기
-      </button>
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          className="flex-1 rounded-md bg-ink text-paper py-2.5 font-medium hover:bg-moss-dark transition-colors"
+        >
+          {editingTask ? "수정 완료" : "할 일 추가하기"}
+        </button>
+        {editingTask && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="rounded-md border border-line px-4 py-2.5 text-sm text-ink-soft hover:text-ink transition-colors"
+          >
+            취소
+          </button>
+        )}
+      </div>
     </form>
   );
 }

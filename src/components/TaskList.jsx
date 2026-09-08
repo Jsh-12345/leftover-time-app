@@ -33,7 +33,7 @@ function sortTasks(tasks, sortBy) {
   });
 }
 
-export function TaskList({ tasks, onRemove, onToggleComplete }) {
+export function TaskList({ tasks, onRemove, onToggleComplete, onEdit, editingTaskId }) {
   const [sortBy, setSortBy] = useState("deadline");
 
   if (tasks.length === 0) {
@@ -67,10 +67,13 @@ export function TaskList({ tasks, onRemove, onToggleComplete }) {
       <ul className="divide-y divide-line border border-line rounded-md overflow-hidden bg-surface">
         {sorted.map((task) => {
           const badge = deadlineBadge(task.deadline, task.deadlineTime);
+          const isEditing = task.id === editingTaskId;
           return (
             <li
               key={task.id}
-              className={`flex items-center gap-3 px-4 py-3 ${task.completed ? "opacity-50" : ""}`}
+              className={`flex items-center gap-3 px-4 py-3 ${task.completed ? "opacity-50" : ""} ${
+                isEditing ? "ring-1 ring-inset ring-moss" : ""
+              }`}
             >
               <input
                 type="checkbox"
@@ -102,6 +105,13 @@ export function TaskList({ tasks, onRemove, onToggleComplete }) {
                   )}
                 </p>
               </div>
+              <button
+                onClick={() => onEdit(task.id)}
+                className="text-sm text-ink-soft hover:text-moss-dark transition-colors shrink-0"
+                aria-label={`${task.title} 수정`}
+              >
+                수정
+              </button>
               <button
                 onClick={() => onRemove(task.id)}
                 className="text-sm text-ink-soft hover:text-clay transition-colors shrink-0"

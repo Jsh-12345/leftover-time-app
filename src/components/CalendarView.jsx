@@ -10,7 +10,15 @@ function formatSelectedLabel(dateStr) {
   return `${d.getMonth() + 1}월 ${d.getDate()}일 (${weekday})`;
 }
 
-export function CalendarView({ events, tasks, onRemoveEvent, onRemoveTask, onToggleComplete }) {
+export function CalendarView({
+  events,
+  tasks,
+  onRemoveEvent,
+  onRemoveTask,
+  onToggleComplete,
+  onEditEvent,
+  onEditTask,
+}) {
   const now = new Date();
   const [cursor, setCursor] = useState({ year: now.getFullYear(), month: now.getMonth() });
   const [selectedDate, setSelectedDate] = useState(toDateStr(now));
@@ -164,6 +172,12 @@ export function CalendarView({ events, tasks, onRemoveEvent, onRemoveTask, onTog
                 </span>
                 <span className="text-ink flex-1 truncate">{e.title}</span>
                 <button
+                  onClick={() => onEditEvent(e.id)}
+                  className="text-xs text-ink-soft hover:text-moss-dark"
+                >
+                  수정
+                </button>
+                <button
                   onClick={() => onRemoveEvent(e.id)}
                   className="text-xs text-ink-soft hover:text-clay"
                 >
@@ -191,6 +205,12 @@ export function CalendarView({ events, tasks, onRemoveEvent, onRemoveTask, onTog
                   {t.title}
                   {t.deadlineTime ? ` · ${t.deadlineTime}` : ""}
                 </span>
+                <button
+                  onClick={() => onEditTask(t.id)}
+                  className="text-xs text-ink-soft hover:text-moss-dark"
+                >
+                  수정
+                </button>
                 <button
                   onClick={() => onRemoveTask(t.id)}
                   className="text-xs text-ink-soft hover:text-clay"
