@@ -33,38 +33,36 @@ export function EventList({ events, onRemove, onEdit, editingEventId }) {
               </p>
             )}
             <div
-              className={`flex items-start gap-3 rounded-md border px-4 py-3 ${
+              className={`flex items-center gap-2 rounded-md border px-3 py-3 ${
                 isEditing ? "border-moss ring-1 ring-moss bg-surface" : "border-line bg-surface"
               } ${past ? "opacity-45" : ""}`}
             >
               <span
-                className="h-2 w-2 rounded-full shrink-0 mt-1.5"
+                className="h-2 w-2 rounded-full shrink-0"
                 style={{ backgroundColor: categoryColor(ev.category) }}
                 aria-hidden="true"
               />
+              <span className="font-mono text-sm text-ink-soft shrink-0 w-12">
+                {ev.startTime}–{ev.endTime}
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="text-ink truncate">{ev.title}</p>
-                <p className="text-xs text-ink-soft font-mono">
-                  {ev.startTime}–{ev.endTime}
-                  {ev.category && <span className="font-sans"> · {ev.category}</span>}
-                </p>
+                {ev.category && <p className="text-xs text-ink-soft truncate">{ev.category}</p>}
               </div>
-              <div className="flex items-center gap-3 shrink-0">
-                <button
-                  onClick={() => onEdit(ev.id)}
-                  className="text-sm text-ink-soft hover:text-moss-dark transition-colors"
-                  aria-label={`${ev.title} 수정`}
-                >
-                  수정
-                </button>
-                <button
-                  onClick={() => onRemove(ev.id)}
-                  className="text-sm text-ink-soft hover:text-clay transition-colors"
-                  aria-label={`${ev.title} 삭제`}
-                >
-                  지우기
-                </button>
-              </div>
+              <button
+                onClick={() => onEdit(ev.id)}
+                className="shrink-0 text-sm text-ink-soft hover:text-moss-dark transition-colors"
+                aria-label={`${ev.title} 수정`}
+              >
+                수정
+              </button>
+              <button
+                onClick={() => onRemove(ev.id)}
+                className="shrink-0 text-sm text-ink-soft hover:text-clay transition-colors"
+                aria-label={`${ev.title} 삭제`}
+              >
+                지우기
+              </button>
             </div>
           </li>
         );
