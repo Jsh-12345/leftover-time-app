@@ -162,24 +162,26 @@ export function CalendarView({
         ) : (
           <ul className="space-y-2">
             {selectedEvents.map((e) => (
-              <li key={e.id} className="flex items-center gap-2 text-sm">
+              <li key={e.id} className="flex items-start gap-2 text-sm">
                 <span
-                  className="h-2 w-2 rounded-full shrink-0"
+                  className="h-2 w-2 rounded-full shrink-0 mt-1.5"
                   style={{ backgroundColor: categoryColor(e.category) }}
                 />
-                <span className="font-mono text-ink-soft w-[92px] shrink-0">
-                  {e.startTime}–{e.endTime}
-                </span>
-                <span className="text-ink flex-1 truncate">{e.title}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-ink truncate">{e.title}</p>
+                  <p className="text-xs font-mono text-ink-soft">
+                    {e.startTime}–{e.endTime}
+                  </p>
+                </div>
                 <button
                   onClick={() => onEditEvent(e.id)}
-                  className="text-xs text-ink-soft hover:text-moss-dark"
+                  className="text-xs text-ink-soft hover:text-moss-dark shrink-0"
                 >
                   수정
                 </button>
                 <button
                   onClick={() => onRemoveEvent(e.id)}
-                  className="text-xs text-ink-soft hover:text-clay"
+                  className="text-xs text-ink-soft hover:text-clay shrink-0"
                 >
                   지우기
                 </button>
